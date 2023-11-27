@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_cf587602d5c36c108b12c3ce25377e72 {
+                    position: relative;
+                    width: 80.0%;
+                    height: 80.0%;
+                    left: 10.0%;
+                    top: 10.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+</head>
+<body>
+            <h1>Este es el mapa</h1>
+    
+            <div class="folium-map" id="map_cf587602d5c36c108b12c3ce25377e72" ></div>
+        
+</body>
+<script>
+    
+    // CREACION DEL MAPA CON LAS CONFIGURACIONES DEL TAMAÑO Y CENTRO
+            var map_cf587602d5c36c108b12c3ce25377e72 = L.map(
+                "map_cf587602d5c36c108b12c3ce25377e72",
+                {
+                    center: [-25.340727, -57.63],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 1,
+                    zoomControl: true,
+                    preferCanvas: false,
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_738c32361734a8aa6276ec8534c60ae3 = L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {"attribution": "Data by \u0026copy; \u003ca target=\"_blank\" href=\"http://openstreetmap.org\"\u003eOpenStreetMap\u003c/a\u003e, under \u003ca target=\"_blank\" href=\"http://www.openstreetmap.org/copyright\"\u003eODbL\u003c/a\u003e.", "detectRetina": false, "maxNativeZoom": 18, "maxZoom": 18, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            );
+        
+    
+                tile_layer_738c32361734a8aa6276ec8534c60ae3.addTo(map_cf587602d5c36c108b12c3ce25377e72);
+
+
+    // INICIO DE LA FUNCION PARA AGREGAR MARCADORES EN EL MAPA
+    function newMarker(e){
+    var new_mark = L.marker().setLatLng(e.latlng).addTo(map_cf587602d5c36c108b12c3ce25377e72);
+    new_mark.dragging.enable();
+    new_mark.on('dblclick', function(e){ map_cf587602d5c36c108b12c3ce25377e72.removeLayer(e.target)})
+    var lat = e.latlng.lat.toFixed(4),
+       lng = e.latlng.lng.toFixed(4);
+       
+
+    // Modificar el contenido del popup para incluir un formulario
+    var popupContent = `
+        <form id="marker-form">
+            <label><b>Latitud:</b> ${lat}</label><br>
+            <label><b>Longitud:</b> ${lng}</label><br>
+            <input type="text" id="info" name="info" placeholder="Ingrese información adicional..."><br>
+            <button type="button" onclick="saveMarkerData(${lat}, ${lng})">Guardar</button>
+        </form>
+    `;
+
+    new_mark.bindPopup(popupContent);
+
+
+    // FUNCION PARA GUARDAR MARCADORES A LA BASE DE DATOS
+     $.ajax({
+        url: '/save_marker',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ lat: lat, lng: lng, info: info }),
+        success: function(response) {
+            console.log(response);
+        },
+        error: function(error) {
+            console.log(error);
+        }
+    });
+
+};
+                
+// FUNCION QUE CONECTA AL SERVIDOR PARA CARGA DE INFO DE LA DB A LA VISTA
+    function loadMarkers() {
+    $.ajax({
+        url: '/get_markers',
+        method: 'GET',
+        success: function(markers) {
+            markers.forEach(function(marker) {
+                L.marker([marker.latitude, marker.longitude]).addTo(map_cf587602d5c36c108b12c3ce25377e72);
+            });
+        },
+        error: function(error) {
+            console.log(error);
+        }
+    });
+}
+
+// LLAMAR A LOADMARKERS CUANDO LA PAGINA SE CARGA
+$(document).ready(function() {
+    loadMarkers();
+});
+                    
+// CREACION DEL MAPA AL DARLE CLICK A LA PANTALLA
+map_cf587602d5c36c108b12c3ce25377e72.on('click', newMarker);
+            
+</script>
+</html>

@@ -1,0 +1,11 @@
+venv
+./venv
+
+static
+./static
+
+__pycache__
+./__pycache__
+
+instance
+./instance
